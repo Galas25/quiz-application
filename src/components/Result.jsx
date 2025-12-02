@@ -6,15 +6,17 @@ export default function Result() {
 
   if (!released || results.length === 0) {
     return (
-      <div className="p-6 text-center text-lg">
-        Your answers have been submitted. Please wait for the instructor to release the results.
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 p-6">
+        <div className="bg-white p-8 rounded shadow-md max-w-lg text-center">
+          <p className="text-gray-800 text-lg">
+            Your answers have been submitted. Please wait for the instructor to release the results.
+          </p>
+        </div>
       </div>
     );
   }
 
   const studentResult = results[results.length - 1];
-
-  // Build correctAnswers dynamically from quizData
   const correctAnswers = {};
   quizData.forEach(q => {
     correctAnswers[q.id] = q.answer;
@@ -25,13 +27,17 @@ export default function Result() {
   }, 0);
 
   return (
-    <div className="p-6 text-center">
-      <h2 className="text-2xl font-bold mb-4">Your Score</h2>
-      <p className="text-lg">
-        Score: {score}/{Object.keys(studentResult.answers).length}
-      </p>
-      <p>Violations: {studentResult.violations}</p>
-      <p>Submitted At: {new Date(studentResult.timestamp).toLocaleString()}</p>
-    </div>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-6">
+  <div className="bg-white p-8 rounded-xl shadow-lg max-w-lg text-center">
+    <h2 className="text-3xl font-bold mb-4 text-gray-800">Your Score</h2>
+    <p className="text-lg text-gray-700 mb-2">
+      Score: {score}/{Object.keys(studentResult.answers).length}
+    </p>
+    <p className="text-gray-700 mb-2">Violations: {studentResult.violations}</p>
+    <p className="text-gray-700">
+      Submitted At: {new Date(studentResult.timestamp).toLocaleString()}
+    </p>
+  </div>
+</div>
   );
 }
