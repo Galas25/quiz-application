@@ -33,7 +33,7 @@ export default function QuizPage() {
   // Prevent quiz retake
   if (localStorage.getItem("quizTaken")) {
     return (
-      <div className="p-6 text-center text-lg">
+      <div className="p-6 text-center text-lg text-white">
         You have already taken this quiz. Please wait for the instructor to release your score.
       </div>
     );

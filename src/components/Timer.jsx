@@ -24,5 +24,5 @@ export default function Timer({ duration, onExpire }) {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  return <div className="text-lg font-bold">Time Left: {formatTime(time)}</div>;
+  return <div className="text-lg font-bold text-white">Time Left: {formatTime(time)}</div>;
 }

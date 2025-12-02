@@ -3,7 +3,7 @@ import { QuizProvider } from "./context/QuizContext";
 import StudentHome from "./pages/StudentHome";
 import QuizPage from "./pages/QuizPage";
 import ResultPending from "./pages/ResultPending";
-import InstructorDashboard from "./components/InstructorDashboard";
+import InstructorDashboard from "./pages/InstructorDashboard";
 
 
 function App() {

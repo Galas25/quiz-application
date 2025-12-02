@@ -10,5 +10,12 @@
     "question": "Which language is used for React?",
     "options": ["Python", "JavaScript", "Java", "C#"],
     "answer": "JavaScript"
+  },
+  {
+    "id": 3,
+    "question": "Whats the name of Yuri",
+    "options": ["Fabricon", "Nate", "Maria", "Kale"],
+    "answer": "Fabricon"
   }
+  
 ]
