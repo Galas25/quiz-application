@@ -1,76 +1,80 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { QuizContext } from "../context/QuizContext";
-import Timer from "./Timer";
-import Question from "./Question";
-import ViolationPopup from "./ViolationPopup";
+import Timer from "../components/Timer";
+import Question from "../components/Question";
+import ViolationPopup from "../components/ViolationPopup";
 
 export default function QuizPage() {
-  const { quizData, submitQuiz, violations, logViolation } = useContext(QuizContext);
+  const { quizData, submitQuiz, violations, logViolation, currentUser } = useContext(QuizContext);
   const [answers, setAnswers] = useState({});
   const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const quizTaken = localStorage.getItem("quizTaken");
+    if (quizTaken === "true") {
+      alert("You have already taken this quiz. Please wait for the instructor to release your score.");
+      navigate("/result");
+    }
+  }, [navigate]);
+
+  const handleSubmit = useCallback(() => {
+    if (!currentUser) return alert("No user found. Please go back and enter your name.");
+    submitQuiz(answers, currentUser);
+    navigate("/result");
+  }, [answers, currentUser, submitQuiz, navigate]);
 
   useEffect(() => {
     const handleTabChange = () => {
       if (document.hidden) {
-        logViolation();
+        const updated = logViolation();
         setShowPopup(true);
-        if (violations + 1 >= 3) submitQuiz(answers);
+
+        const count = typeof updated === "number" ? updated : violations + 1;
+        if (count >= 3) {
+          handleSubmit();
+        }
       }
     };
+
     document.addEventListener("visibilitychange", handleTabChange);
     return () => document.removeEventListener("visibilitychange", handleTabChange);
-  }, [violations, answers, logViolation, submitQuiz]);
+  }, [logViolation, violations, handleSubmit]);
 
-  if (localStorage.getItem("quizTaken")) {
+  const handleAnswer = (id, value) => {
+    setAnswers(prev => ({ ...prev, [id]: value }));
+  };
+
+  if (!currentUser) {
     return (
-      <div className="flex justify-center items-center min-h-screen p-6 bg-gray-50">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-lg text-center">
-          <p className="text-lg text-gray-800">
-            You have already taken this quiz. Please wait for the instructor to release your score.
-          </p>
-        </div>
+      <div className="p-6 text-center text-lg text-gray-800">
+        No student detected. Please go back to the home page and enter your name.
       </div>
     );
   }
 
-  const handleAnswer = (id, value) => setAnswers({ ...answers, [id]: value });
-  const handleSubmit = () => submitQuiz(answers);
-
   return (
-    <div className="flex justify-center p-8 bg-gray-50 min-h-screen">
-      <div className="w-full max-w-2xl">
-        {/* Timer */}
-        <Timer duration={300} onExpire={handleSubmit} />
+    <div className="max-w-3xl mx-auto p-6 bg-gray-100 min-h-screen">
+      <Timer duration={30} onExpire={handleSubmit} />
 
-        {/* Questions */}
-        <div className="mt-6 space-y-6">
-          {quizData.map(q => (
-            <Question
-              key={q.id}
-              question={q}
-              onAnswer={(val) => handleAnswer(q.id, val)}
-              selected={answers[q.id]}
-            />
-          ))}
-        </div>
-
-        {/* Submit button */}
-        <div className="mt-6 text-center">
-          <button
-            className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition"
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
-        </div>
-
-        {/* Violation popup */}
-        <ViolationPopup
-          visible={showPopup}
-          count={violations}
-          onClose={() => setShowPopup(false)}
+      {quizData.map(q => (
+        <Question
+          key={q.id}
+          question={q}
+          selected={answers[q.id]}
+          onAnswer={(val) => handleAnswer(q.id, val)}
         />
-      </div>
+      ))}
+
+      <button
+        className="mt-4 w-full px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+        onClick={handleSubmit}
+      >
+        Submit
+      </button>
+
+      <ViolationPopup visible={showPopup} count={violations} onClose={() => setShowPopup(false)} />
     </div>
   );
 }
