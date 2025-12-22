@@ -106,55 +106,69 @@ export default function StudentHome() {
       </header>
 
       {/* --- MAIN CONTENT (Grid) --- */}
-      <main className="flex-1 p-6 md:p-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {subjects.map((subject) => (
-            <div key={subject.id} className="relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col overflow-visible">
+    {/* --- MAIN CONTENT (Grid) --- */}
+    <main className="flex-1 p-6 md:p-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {subjects.map((subject) => (
+          <div key={subject.id} className="relative bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col overflow-visible">
 
-              {/* Card Header */}
-              <div className={`${subject.color} p-4 text-white h-24 rounded-t-lg relative`}>
-                <div className="flex justify-between items-start">
-                  <div onClick={() => navigate("/quiz", { state: { subjectName: subject.title } })} className="cursor-pointer group">
-                    <h2 className="text-xl font-semibold leading-tight group-hover:underline">{subject.title}</h2>
-                    <p className="text-sm opacity-90">{subject.section}</p>
-                  </div>
-                  <div className="relative">
-                    <button onClick={() => setOpenMenuId(openMenuId === subject.id ? null : subject.id)} className="p-1 hover:bg-white/20 rounded-full">
-                      <MoreVertical size={20} />
-                    </button>
-                    {openMenuId === subject.id && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl border border-gray-100 z-30 py-1">
-                        <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
-                          <BarChart2 size={16} /> View Grades
-                        </button>
-                        <button onClick={() => handleUnenroll(subject.id)} className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
-                          <LogOut size={16} /> Unenroll
-                        </button>
-                      </div>
-                    )}
-                  </div>
+            {/* Card Header - NO ONCLICK HERE ANYMORE */}
+            <div className={`${subject.color} p-4 text-white h-24 rounded-t-lg relative`}>
+              <div className="flex justify-between items-start">
+                <div className="group">
+                  <h2 className="text-xl font-semibold leading-tight">{subject.title}</h2>
+                  <p className="text-sm opacity-90">{subject.section}</p>
                 </div>
-              </div>
-
-              {/* Card Body */}
-              <div className="flex-1 p-4 min-h-[120px]">
-                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 font-sans">Upcoming</h3>
-                <div onClick={() => navigate("/quiz")} className="flex items-center gap-3 text-sm text-blue-600 cursor-pointer hover:underline">
-                  <BookOpen size={16} />
-                  <span>Module 1 Quiz</span>
+                <div className="relative">
+                  <button onClick={() => setOpenMenuId(openMenuId === subject.id ? null : subject.id)} className="p-1 hover:bg-white/20 rounded-full">
+                    <MoreVertical size={20} />
+                  </button>
+                  {openMenuId === subject.id && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl border border-gray-100 z-30 py-1">
+                      <button
+                        onClick={() => {
+                          setOpenMenuId(null);
+                          navigate("/result", { state: { subjectName: subject.title } });
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <BarChart2 size={16} /> View Grades
+                      </button>
+                      <button onClick={() => handleUnenroll(subject.id)} className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                        <LogOut size={16} /> Unenroll
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              {/* Footer */}
-              <div className="border-t border-gray-100 p-3 flex justify-end">
-                <button title="View History" onClick={() => navigate("/result")} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-blue-600 transition">
-                  <Folder size={18} />
-                </button>
               </div>
             </div>
-          ))}
-        </div>
-      </main>
+
+            {/* Card Body - THE ONLY PLACE TO START THE QUIZ */}
+            <div className="flex-1 p-4 min-h-[120px]">
+              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 font-sans text-nowrap">Upcoming Assessments</h3>
+              <div
+                onClick={() => navigate("/quiz", { state: { subjectName: subject.title } })}
+                className="flex items-center gap-3 text-sm text-blue-600 cursor-pointer hover:bg-blue-50 p-2 rounded-md transition border border-transparent hover:border-blue-100 group"
+              >
+                <BookOpen size={16} />
+                <span className="font-medium group-hover:underline">Start Module 1 Quiz</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-gray-100 p-3 flex justify-end">
+              <button
+                title="View History"
+                onClick={() => navigate("/result", { state: { subjectName: subject.title } })}
+                className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-blue-600 transition"
+              >
+                <Folder size={18} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </main>
 
       <footer className="bg-white border-t border-gray-200 p-4 text-center text-sm text-gray-500">
         <p>&copy; 2024 QuizPortal. All rights reserved.</p>
