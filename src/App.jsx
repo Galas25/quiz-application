@@ -1,29 +1,47 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QuizProvider } from "./context/QuizContext";
-import StudentHome from "./pages/studentDashboard"; // This is your Dashboard
+import StudentHome from "./pages/studentDashboard";
 import QuizPage from "./pages/QuizPage";
-import Result from "./components/Result";
-import ResultPending from "./pages/ResultPending";
+import ResultPage from "./pages/ResultPage";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import Login from "./pages/Login.jsx";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import the wrapper
 
 function App() {
   return (
     <QuizProvider>
       <Router>
         <Routes>
-          {/* Default Landing */}
+          {/* Public Auth Routes */}
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
 
-          {/* New Dashboard Route */}
-          <Route path="/studenthome" element={<StudentHome />} />
+          {/* Protected Student Flow */}
+          <Route path="/studenthome" element={
+            <ProtectedRoute roleRequired="student">
+              <StudentHome />
+            </ProtectedRoute>
+          } />
 
-          {/* Other Routes */}
-          <Route path="/quiz" element={<QuizPage />} />
-          <Route path="/result" element={<Result />} />
-          <Route path="/pending" element={<ResultPending />} />
-          <Route path="/instructor" element={<InstructorDashboard />} />
+          <Route path="/quiz" element={
+            <ProtectedRoute roleRequired="student">
+              <QuizPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/result" element={
+            <ProtectedRoute roleRequired="student">
+              <ResultPage />
+            </ProtectedRoute>
+          } />
+
+          {/* Protected Instructor Flow */}
+          <Route path="/instructor" element={
+            <ProtectedRoute roleRequired="instructor">
+              <InstructorDashboard />
+            </ProtectedRoute>
+          } />
+
         </Routes>
       </Router>
     </QuizProvider>
