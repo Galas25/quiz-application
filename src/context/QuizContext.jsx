@@ -4,45 +4,58 @@ export const QuizContext = createContext();
 
 export const QuizProvider = ({ children }) => {
   const [quizData, setQuizData] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [results, setResults] = useState([]);
   const [violations, setViolations] = useState(0);
-  const [released, setReleased] = useState(false);
 
-  // Load quiz questions
+  // 1. IMPROVED INITIALIZATION: Grab data immediately from localStorage
+  const [currentUser, setCurrentUser] = useState(() => {
+    const savedUser = localStorage.getItem("currentUser");
+    if (!savedUser) return null;
+    try {
+      const parsed = JSON.parse(savedUser);
+      return parsed.name || parsed; // Handles both object and string formats
+    } catch {
+      return savedUser;
+    }
+  });
+
+  const [results, setResults] = useState(() => {
+    const savedResults = localStorage.getItem("results");
+    return savedResults ? JSON.parse(savedResults) : [];
+  });
+
+  const [released, setReleased] = useState(() => {
+    return localStorage.getItem("released") === "true";
+  });
+
+  // 2. Load quiz questions (Keep this as is)
   useEffect(() => {
     fetch("/questions.json")
       .then(res => res.json())
-      .then(data => setQuizData(data));
+      .then(data => setQuizData(data))
+      .catch(err => console.error("Error loading questions:", err));
   }, []);
 
-  // Load results, released state, and currentUser from localStorage on mount
+  // 3. PERSISTENCE: Save to localStorage whenever state changes
   useEffect(() => {
-    const savedResults = localStorage.getItem("results");
-    if (savedResults) setResults(JSON.parse(savedResults));
-
-    const savedReleased = localStorage.getItem("released");
-    if (savedReleased === "true") setReleased(true);
-
-    const savedUser = localStorage.getItem("currentUser");
-    if (savedUser) setCurrentUser(savedUser);
-  }, []);
-
-  // Persist results to localStorage whenever they change
-  useEffect(() => {
-    if (results.length > 0) {
-      localStorage.setItem("results", JSON.stringify(results));
-    }
+    localStorage.setItem("results", JSON.stringify(results));
   }, [results]);
 
-  // Persist currentUser whenever it changes
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem("currentUser", currentUser);
+      // Consistency check: ensure we store it in a way that the initializer above likes
+      localStorage.setItem("currentUser", JSON.stringify({ name: currentUser }));
+    } else {
+      localStorage.removeItem("currentUser");
     }
   }, [currentUser]);
 
-  // Log violation and return updated count
+  useEffect(() => {
+    localStorage.setItem("released", released.toString());
+  }, [released]);
+
+  // --- Functions (logViolation, submitQuiz, releaseScores) ---
+  // You can keep these exactly as they are in your original code!
+
   const logViolation = () => {
     let updatedCount;
     setViolations(v => {
@@ -52,34 +65,27 @@ export const QuizProvider = ({ children }) => {
     return updatedCount;
   };
 
-const submitQuiz = (answers, name) => {
-  const studentName = name || currentUser || "Student";
+  const submitQuiz = (answers, name) => {
+    const studentName = name || currentUser || "Student";
+    const finalViolations = violations;
 
-  const finalViolations = violations;   // capture exact value before reset
+    const newResults = [
+      ...results,
+      {
+        name: studentName,
+        answers,
+        timestamp: Date.now(),
+        violations: finalViolations
+      }
+    ];
 
-  const newResults = [
-    ...results,
-    { 
-      name: studentName,
-      answers,
-      timestamp: Date.now(),
-      violations: finalViolations   // use captured value
-    }
-  ];
+    setResults(newResults);
+    localStorage.setItem("quizTaken", "true");
+    setViolations(0);
+  };
 
-  setResults(newResults);
-  localStorage.setItem("results", JSON.stringify(newResults));
-
-  localStorage.setItem("quizTaken", "true");
-
-  setViolations(0);  // reset AFTER storing correct value
-};
-
-
-  // Release scores and persist
   const releaseScores = () => {
     setReleased(true);
-    localStorage.setItem("released", "true");
   };
 
   return (
