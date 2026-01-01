@@ -1,43 +1,51 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useRef } from "react";
 
 export const QuizContext = createContext();
 
 export const QuizProvider = ({ children }) => {
-  const [quizData, setQuizData] = useState([]);
-  const [violations, setViolations] = useState(0);
-
-  // 1. Initialize currentUser
   const [currentUser, setCurrentUser] = useState(() => {
-    const savedUser = localStorage.getItem("currentUser");
-    if (!savedUser) return null;
+    const saved = localStorage.getItem("currentUser");
+    if (!saved) return null;
     try {
-      const parsed = JSON.parse(savedUser);
-      return parsed.name || parsed;
+      const parsed = JSON.parse(saved);
+      return typeof parsed === "string" ? parsed : parsed?.name ?? null;
     } catch {
-      return savedUser;
+      return saved;
     }
   });
 
-  // 2. Initialize results
   const [results, setResults] = useState(() => {
-    const savedResults = localStorage.getItem("results");
-    return savedResults ? JSON.parse(savedResults) : [];
+    const saved = localStorage.getItem("results");
+    return saved ? JSON.parse(saved) : {};
   });
 
-  // 3. Initialize release status
-  const [released, setReleased] = useState(() => {
-    return localStorage.getItem("released") === "true";
-  });
+  const [released, setReleased] = useState(
+    () => localStorage.getItem("released") === "true"
+  );
 
-  // 4. Load questions
+  const [quizData, setQuizData] = useState({});
+  const [loadingSubjects, setLoadingSubjects] = useState(true);
+  const violationRef = useRef({});
+
   useEffect(() => {
-    fetch("/questions.json")
-      .then(res => res.json())
-      .then(data => setQuizData(data))
-      .catch(err => console.error("Error loading questions:", err));
+    const subjects = ["astronomy", "earth-science", "honors-earth-science"];
+    const loadAll = async () => {
+      const data = {};
+      for (const sub of subjects) {
+        try {
+          const res = await fetch(`/questions/${sub}.json`);
+          const questions = await res.json();
+          data[sub] = questions;
+        } catch {
+          data[sub] = [];
+        }
+      }
+      setQuizData(data);
+      setLoadingSubjects(false);
+    };
+    loadAll();
   }, []);
 
-  // 5. Persistence Effects
   useEffect(() => {
     localStorage.setItem("results", JSON.stringify(results));
   }, [results]);
@@ -46,48 +54,72 @@ export const QuizProvider = ({ children }) => {
     localStorage.setItem("released", released.toString());
   }, [released]);
 
-  // --- FUNCTIONS ---
-
-  const logViolation = () => {
-    setViolations(prev => prev + 1);
+  const logViolation = (subject) => {
+    const next = (violationRef.current[subject] || 0) + 1;
+    violationRef.current[subject] = next;
+    return next;
   };
 
-  const submitQuiz = (answers, name, subject = "General Quiz") => {
-    const studentName = name || currentUser || "Student";
+  const calculateScore = (subjectKey, answers) => {
+    const questions = quizData[subjectKey] || [];
+    if (!questions.length || !answers) return 0;
 
-    // Use the current value of 'violations' state
-    const newEntry = {
-      name: studentName,
-      subject: subject,
-      answers,
-      timestamp: Date.now(),
-      violations: violations
-    };
+    return questions.reduce((score, q) => {
+      const userAnswer = answers[q.id];
+      if (userAnswer === undefined) return score;
 
-    setResults(prevResults => [...prevResults, newEntry]);
-
-    // Reset violations ONLY after submitting
-    setViolations(0);
-    localStorage.setItem("quizTaken", "true");
+      // Map selected string to its index in options
+      const selectedIndex = q.options.indexOf(userAnswer);
+      return score + (selectedIndex === Number(q.answer) ? 1 : 0);
+    }, 0);
   };
 
-  const releaseScores = () => {
-    setReleased(true);
+  const submitQuiz = (
+    subjectKey,
+    answers,
+    moduleName = "Module 1",
+    quizName = "Quiz 1"
+  ) => {
+    const studentName = currentUser || "Student";
+
+    setResults((prev) => {
+      const updated = { ...prev };
+      if (!updated[subjectKey]) updated[subjectKey] = [];
+      updated[subjectKey].push({
+        id: crypto.randomUUID(),
+        name: studentName,
+        subject: subjectKey,
+        module: moduleName,
+        quizName: quizName,
+        answers,
+        timestamp: Date.now(),
+        violations: violationRef.current[subjectKey] || 0,
+        score: calculateScore(subjectKey, answers),
+      });
+      return updated;
+    });
+
+    const quizTaken = JSON.parse(localStorage.getItem("quizTakenBySubject") || "{}");
+    quizTaken[subjectKey] = true;
+    localStorage.setItem("quizTakenBySubject", JSON.stringify(quizTaken));
   };
+
+  const releaseScores = () => setReleased(true);
 
   return (
     <QuizContext.Provider
       value={{
-        quizData,
         currentUser,
         setCurrentUser,
         results,
-        setResults,
-        violations,
-        logViolation,
         submitQuiz,
+        logViolation,
         released,
+        quizData,
+        loadingSubjects,
         releaseScores,
+        setResults,
+        calculateScore,
       }}
     >
       {children}

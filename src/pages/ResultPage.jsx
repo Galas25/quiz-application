@@ -8,10 +8,15 @@ export default function ResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const subjectFilter = location.state?.subjectName;
+  // Pass both subjectName and subjectKey when navigating from StudentHome
+  const subjectName = location.state?.subjectName;
+  const subjectKey = location.state?.subjectKey;
 
-  // Logic for robust comparison
-  const filteredResults = results.filter(r => {
+  // Grab results for this subject
+  const subjectResults = (subjectKey && results[subjectKey]) || [];
+
+  // Filter by currentUser
+  const filteredResults = subjectResults.filter(r => {
     const currentName = typeof currentUser === 'object' ? currentUser?.name : currentUser;
     const resultName = typeof r.name === 'object' ? r.name?.name : r.name;
     return resultName === currentName;
@@ -29,7 +34,7 @@ export default function ResultsPage() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-gray-800">
-            {subjectFilter ? `${subjectFilter} History` : "My Quiz History"}
+            {subjectName ? `${subjectName} History` : "My Quiz History"}
           </h1>
           <p className="text-xs text-gray-500 font-medium">
             Viewing results for {typeof currentUser === 'object' ? currentUser.name : currentUser}
@@ -112,7 +117,6 @@ export default function ResultsPage() {
               </table>
             </div>
           ) : (
-            /* --- EMPTY STATE --- */
             <div className="p-20 text-center">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Folder size={40} className="text-gray-300" />

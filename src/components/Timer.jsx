@@ -16,8 +16,10 @@ export default function Timer({ duration, onExpire }) {
   useEffect(() => {
     if (time <= 0) {
       onExpire();
+      setTime(0);
     }
   }, [time, onExpire]);
+
 
   const formatTime = sec => {
     const m = Math.floor(sec / 60);
