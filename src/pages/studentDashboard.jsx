@@ -32,6 +32,7 @@ export default function StudentHome() {
   }, [currentUser, navigate, setCurrentUser]);
 
   const handleLogout = () => {
+    // clear persisted user and update context
     localStorage.removeItem("currentUser");
     setCurrentUser(null);
     navigate("/login");

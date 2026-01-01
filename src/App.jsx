@@ -5,6 +5,7 @@ import QuizPage from "./pages/QuizPage";
 import ResultPage from "./pages/ResultPage";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import Login from "./pages/Login.jsx";
+import StorageDebug from "./pages/StorageDebug";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import the wrapper
 
 function App() {
@@ -41,6 +42,9 @@ function App() {
               <InstructorDashboard />
             </ProtectedRoute>
           } />
+
+          {/* Debug route (temporary) */}
+          <Route path="/debug" element={<StorageDebug />} />
 
         </Routes>
       </Router>

@@ -22,6 +22,7 @@ export default function InstructorDashboard() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    // clear persisted user so instructor is fully logged out
     localStorage.removeItem("currentUser");
     navigate("/");
   };
@@ -40,7 +41,11 @@ export default function InstructorDashboard() {
     if (!subjectQuestions.length || !answers) return 0;
     return Object.entries(answers).reduce((acc, [id, ans]) => {
       const q = subjectQuestions.find(q => String(q.id) === String(id));
-      return acc + (q && q.answer === ans ? 1 : 0);
+      if (!q) return acc;
+      let selectedIndex = -1;
+      if (typeof ans === 'number') selectedIndex = Number(ans);
+      else selectedIndex = q.options.indexOf(ans);
+      return acc + (selectedIndex === Number(q.answer) ? 1 : 0);
     }, 0);
   };
 
@@ -53,6 +58,8 @@ export default function InstructorDashboard() {
   const allSubmissions = Object.values(results || {}).flat();
   const totalSubmissions = allSubmissions.length;
   const flaggedCount = allSubmissions.filter(r => r?.violations > 0).length;
+  const avgIntegrity = allSubmissions.length > 0 ? allSubmissions.reduce((sum, r) => sum + (100 - (r.violations / 3 * 100)), 0) / allSubmissions.length : 100;
+  const uniqueStudents = new Set(allSubmissions.map(r => r.name)).size;
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc]">
@@ -122,21 +129,29 @@ export default function InstructorDashboard() {
 
         <div className="p-8 max-w-7xl mx-auto">
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4">
                 <Users size={20} />
               </div>
               <h3 className="text-3xl font-bold text-slate-800">{totalSubmissions}</h3>
-              <p className="text-slate-500 text-sm font-medium">Submissions Received</p>
+              <p className="text-slate-500 text-sm font-medium">Quizzes Completed</p>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center mb-4">
                 <ShieldAlert size={20} />
               </div>
-              <h3 className="text-3xl font-bold text-slate-800">{flaggedCount}</h3>
-              <p className="text-slate-500 text-sm font-medium">Integrity Reviews Needed</p>
+              <h3 className="text-3xl font-bold text-slate-800">{avgIntegrity.toFixed(0)}%</h3>
+              <p className="text-slate-500 text-sm font-medium">Academic Integrity</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-4">
+                <Users size={20} />
+              </div>
+              <h3 className="text-3xl font-bold text-slate-800">{uniqueStudents}</h3>
+              <p className="text-slate-500 text-sm font-medium">Records Found</p>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">

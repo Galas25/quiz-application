@@ -4,7 +4,7 @@ import { QuizContext } from "../context/QuizContext";
 import { ChevronLeft, ClipboardList, Calendar, AlertCircle, Folder } from "lucide-react";
 
 export default function ResultsPage() {
-  const { results, currentUser, released } = useContext(QuizContext);
+  const { results, currentUser, released, calculateScore, quizData } = useContext(QuizContext);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -18,9 +18,17 @@ export default function ResultsPage() {
   // Filter by currentUser
   const filteredResults = subjectResults.filter(r => {
     const currentName = typeof currentUser === 'object' ? currentUser?.name : currentUser;
-    const resultName = typeof r.name === 'object' ? r.name?.name : r.name;
+    const resultName = r.name;
     return resultName === currentName;
   });
+
+  const avgCheating = filteredResults.length > 0 ? filteredResults.reduce((sum, r) => sum + (r.violations / 3 * 100), 0) / filteredResults.length : 0;
+  const integrityPercent = 100 - avgCheating;
+
+  const avgGrade = filteredResults.length > 0 ? filteredResults.reduce((sum, r) => {
+    const score = calculateScore(r.answers, quizData[subjectKey]);
+    return sum + score;
+  }, 0) / filteredResults.length : 0;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
@@ -47,7 +55,7 @@ export default function ResultsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <p className="text-sm font-medium text-gray-500 mb-1">Overall Grade</p>
-            <h3 className="text-3xl font-bold text-blue-600">{released ? "88%" : "Pending"}</h3>
+            <h3 className="text-3xl font-bold text-blue-600">{released ? `${avgGrade.toFixed(0)}%` : "Pending"}</h3>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -57,8 +65,8 @@ export default function ResultsPage() {
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <p className="text-sm font-medium text-gray-500 mb-1">Academic Integrity</p>
-            <h3 className={`text-3xl font-bold ${filteredResults.some(r => r.violations > 0) ? 'text-orange-500' : 'text-green-500'}`}>
-              {filteredResults.some(r => r.violations > 0) ? "Warning" : "Clear"}
+            <h3 className={`text-3xl font-bold ${integrityPercent < 100 ? 'text-orange-500' : 'text-green-500'}`}>
+              {integrityPercent.toFixed(0)}%
             </h3>
           </div>
         </div>
@@ -72,7 +80,7 @@ export default function ResultsPage() {
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Assessment</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Violations</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Cheating %</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Grade Status</th>
                   </tr>
                 </thead>
@@ -97,15 +105,18 @@ export default function ResultsPage() {
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                           result.violations > 0 ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
                         }`}>
-                          <AlertCircle size={12} /> {result.violations}
+                          <AlertCircle size={12} /> {Math.round((result.violations / 3) * 100)}%
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        {released ? (
-                          <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-md border border-green-200">
-                            Scored: 85%
-                          </span>
-                        ) : (
+                        {released ? (() => {
+                          const score = calculateScore(result.answers, quizData[subjectKey]);
+                          return (
+                            <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-md border border-green-200">
+                              Scored: {score.toFixed(0)}%
+                            </span>
+                          );
+                        })() : (
                           <span className="text-sm font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-md border border-orange-200">
                             Pending Review
                           </span>

@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { QuizContext } from "../context/QuizContext";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap, User, ShieldCheck } from "lucide-react";
+// ThemeContext removed to restore original styling
 
 export default function Login() {
   const { setCurrentUser } = useContext(QuizContext);
@@ -43,8 +44,10 @@ export default function Login() {
     }
   };
 
+  // no theme context in original version
+
   return (
-    <div className={`flex items-center justify-center min-h-screen w-full px-4 transition-colors duration-500 ${isAdminMode ? "bg-slate-900" : "bg-gray-100"}`}>
+    <div className={`flex items-center justify-center min-h-screen w-full px-4 transition-colors duration-500`}>
 
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl relative overflow-hidden">
 

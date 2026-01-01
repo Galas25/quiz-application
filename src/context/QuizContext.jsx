@@ -46,6 +46,26 @@ export const QuizProvider = ({ children }) => {
     loadAll();
   }, []);
 
+  // When quiz data finishes loading, recompute stored scores for any saved results
+  useEffect(() => {
+    if (loadingSubjects) return;
+    setResults((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((subKey) => {
+        const questions = quizData[subKey] || [];
+        updated[subKey] = (updated[subKey] || []).map((r) => {
+          const recomputed = calculateScore(subKey, r.answers);
+          return {
+            ...r,
+            score: recomputed,
+            totalQuestions: questions.length || r.totalQuestions || 0,
+          };
+        });
+      });
+      return updated;
+    });
+  }, [loadingSubjects, quizData]);
+
   useEffect(() => {
     localStorage.setItem("results", JSON.stringify(results));
   }, [results]);
@@ -66,10 +86,13 @@ export const QuizProvider = ({ children }) => {
 
     return questions.reduce((score, q) => {
       const userAnswer = answers[q.id];
-      if (userAnswer === undefined) return score;
+      if (userAnswer === undefined || userAnswer === null) return score;
 
-      // Map selected string to its index in options
-      const selectedIndex = q.options.indexOf(userAnswer);
+      // support two formats: stored index (number) or stored option text (string)
+      let selectedIndex = -1;
+      if (typeof userAnswer === 'number') selectedIndex = Number(userAnswer);
+      else selectedIndex = q.options.indexOf(userAnswer);
+
       return score + (selectedIndex === Number(q.answer) ? 1 : 0);
     }, 0);
   };
@@ -82,22 +105,43 @@ export const QuizProvider = ({ children }) => {
   ) => {
     const studentName = currentUser || "Student";
 
-    setResults((prev) => {
-      const updated = { ...prev };
-      if (!updated[subjectKey]) updated[subjectKey] = [];
-      updated[subjectKey].push({
-        id: crypto.randomUUID(),
-        name: studentName,
-        subject: subjectKey,
-        module: moduleName,
-        quizName: quizName,
-        answers,
-        timestamp: Date.now(),
-        violations: violationRef.current[subjectKey] || 0,
-        score: calculateScore(subjectKey, answers),
+    // Ensure we have question data for accurate grading. If not loaded yet, fetch on demand.
+    const ensureAndSave = async () => {
+      let questions = quizData[subjectKey] || [];
+      if (!questions.length) {
+        try {
+          const res = await fetch(`/questions/${subjectKey}.json`);
+          const qs = await res.json();
+          setQuizData((prev) => ({ ...prev, [subjectKey]: qs }));
+          questions = qs;
+        } catch {
+          questions = [];
+        }
+      }
+
+      const computedScore = questions.length ? calculateScore(subjectKey, answers) : 0;
+
+      setResults((prev) => {
+        const updated = { ...prev };
+        if (!updated[subjectKey]) updated[subjectKey] = [];
+        updated[subjectKey].push({
+          id: crypto.randomUUID(),
+          name: studentName,
+          subject: subjectKey,
+          module: moduleName,
+          quizName: quizName,
+          answers,
+          timestamp: Date.now(),
+          violations: violationRef.current[subjectKey] || 0,
+          score: computedScore,
+          totalQuestions: questions.length,
+        });
+        return updated;
       });
-      return updated;
-    });
+    };
+
+    // fire and forget; navigation usually follows from caller after submitQuiz
+    ensureAndSave();
 
     const quizTaken = JSON.parse(localStorage.getItem("quizTakenBySubject") || "{}");
     quizTaken[subjectKey] = true;

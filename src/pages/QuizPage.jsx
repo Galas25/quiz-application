@@ -13,6 +13,8 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState({});
   const [showPopup, setShowPopup] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [violationCount, setViolationCount] = useState(0);
+  const [popupCount, setPopupCount] = useState(0);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,10 +47,11 @@ export default function QuizPage() {
     }
   }, [results, subjectKey, subjectName, navigate]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback((force = false) => {
     if (hasSubmittedRef.current) return;
 
     if (
+      !force &&
       subjectQuestions.length &&
       Object.keys(answers).length < subjectQuestions.length
     ) {
@@ -65,21 +68,28 @@ export default function QuizPage() {
     setAnswers(prev => ({ ...prev, [id]: value }));
   };
 
+  // Auto-submit on 3 violations
+  useEffect(() => {
+    if (violationCount >= 3 && !hasSubmittedRef.current) {
+      handleSubmit(true);
+    }
+  }, [violationCount, handleSubmit]);
+
   // Tab violation logic
   useEffect(() => {
     const handleTabChange = () => {
       if (!document.hidden || hasSubmittedRef.current) return;
 
-      const violationCount = logViolation(subjectKey);
+      const newCount = logViolation(subjectKey);
+      setViolationCount(newCount);
+      setPopupCount(newCount);
       setShowPopup(true);
-
-      if (violationCount >= 3) handleSubmit();
     };
 
     document.addEventListener("visibilitychange", handleTabChange);
     return () =>
       document.removeEventListener("visibilitychange", handleTabChange);
-  }, [logViolation, handleSubmit, subjectKey]);
+  }, [logViolation, subjectKey]);
 
   if (!currentUser) {
     return (
@@ -127,12 +137,12 @@ export default function QuizPage() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 bg-orange-50 text-orange-700 px-4 py-1.5 rounded-full border border-orange-200 font-bold">
             <Clock size={18} />
-            <Timer duration={30} onExpire={handleSubmit} />
+            <Timer duration={30} onExpire={() => handleSubmit(true)} />
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs font-bold text-gray-700">{currentUser}</span>
             <span className="text-[10px] text-red-500 font-black">
-              VIOLATIONS: {results[subjectKey]?.[0]?.violations || 0}/3
+              VIOLATIONS: {violationCount}/3
             </span>
           </div>
         </div>
@@ -166,7 +176,7 @@ export default function QuizPage() {
       {/* Violation Popup */}
       <ViolationPopup
         visible={showPopup}
-        count={results[subjectKey]?.[0]?.violations || 0}
+        count={popupCount}
         onClose={() => setShowPopup(false)}
       />
     </div>
