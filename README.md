@@ -1,16 +1,129 @@
-# React + Vite
+# Quiz Application (Vite + React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web-based **Quiz Application** built using **React** and **Vite**.  
+This system supports **students and instructors**, includes quiz timing, result display, and basic access protection.
 
-Currently, two official plugins are available:
+## Technologies Used
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React** – UI and components
+- **Vite** – Fast development and build tool
+- **JavaScript (ES6+)**
+- **HTML & CSS**
+- **JSON** – Quiz questions storage
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Student Features
+- Take quizzes with a timer
+- Answer multiple-choice questions
+- Auto-submit when time is up
+- View quiz results
+- Violation detection popup
 
-## Expanding the ESLint configuration
+### Instructor Features
+- Instructor dashboard
+- Manage quiz content (JSON-based)
+- View student-related data (basic)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### System Features
+- Login system
+- Protected routes
+- Quiz context for state management
+- Timer per quiz
+- Result page after submission
+
+## Project Structure
+
+```
+quiz-application/
+├── public/
+│   └── questions/
+│       ├── astronomy.json
+│       ├── earth-science.json
+│       └── honors-earth-science.json
+│
+├── src/
+│   ├── components/
+│   │   ├── Question.jsx
+│   │   ├── Quiz.jsx
+│   │   ├── Result.jsx
+│   │   ├── Timer.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   └── ViolationPopup.jsx
+│   │
+│   ├── context/
+│   │   └── QuizContext.jsx
+│   │
+│   ├── pages/
+│   │   ├── Login.jsx
+│   │   ├── QuizPage.jsx
+│   │   ├── ResultPage.jsx
+│   │   ├── InstructorDashboard.jsx
+│   │   ├── StudentDashboard.jsx
+│   │   └── StorageDebug.jsx
+│   │
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── App.css
+│
+├── index.html
+├── package.json
+├── vite.config.js
+└── README.md
+```
+
+## Installation & Setup
+
+### Clone the repository
+```bash
+git clone https://github.com/Galas25/quiz-application.git
+```
+
+### Go to the project folder
+```bash
+cd quiz-application
+```
+
+### Install dependencies
+```bash
+npm install
+```
+
+### Run the development server
+```bash
+npm run dev
+```
+
+### Open in browser
+```
+http://localhost:5173/
+```
+
+## Available Scripts
+
+- `npm run dev` – Start development server
+- `npm run build` – Build for production
+- `npm run preview` – Preview production build
+
+## Quiz Data
+
+Quiz questions are stored in:
+```
+public/questions/
+```
+
+Each quiz is written in **JSON format**, making it easy to edit or add new quizzes.
+
+## Purpose of the Project
+
+This project was created for:
+- Learning **React fundamentals**
+- Using **Vite workflow**
+- Understanding **state management with Context**
+- Building a simple **quiz system**
+
+
+
+## License
+
+This project is open-source and free to use.
