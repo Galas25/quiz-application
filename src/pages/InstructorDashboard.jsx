@@ -16,13 +16,13 @@ import {
 } from "lucide-react";
 
 export default function InstructorDashboard() {
-  const { results, setResults, releaseScores, released, setCurrentUser, currentUser, quizData } = useContext(QuizContext);
+  const { results, setResults, setCurrentUser, currentUser, quizData } = useContext(QuizContext);
   const [searchTerm, setSearchTerm] = useState("");
+  const [released, setReleased] = useState(false); // button state
   const navigate = useNavigate();
 
   const handleLogout = () => {
     setCurrentUser(null);
-    // clear persisted user so instructor is fully logged out
     localStorage.removeItem("currentUser");
     navigate("/");
   };
@@ -50,15 +50,24 @@ export default function InstructorDashboard() {
   };
 
   const handleReleaseScores = () => {
-    releaseScores();
-    localStorage.setItem("released", "true");
+    setResults(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(subKey => {
+        updated[subKey] = updated[subKey].map(r => ({ ...r, released: true }));
+      });
+      localStorage.setItem("results", JSON.stringify(updated));
+      return updated;
+    });
+    setReleased(true);
   };
 
   // Flatten all results
   const allSubmissions = Object.values(results || {}).flat();
   const totalSubmissions = allSubmissions.length;
   const flaggedCount = allSubmissions.filter(r => r?.violations > 0).length;
-  const avgIntegrity = allSubmissions.length > 0 ? allSubmissions.reduce((sum, r) => sum + (100 - (r.violations / 3 * 100)), 0) / allSubmissions.length : 100;
+  const avgIntegrity = allSubmissions.length > 0
+    ? allSubmissions.reduce((sum, r) => sum + (100 - (r.violations / 3 * 100)), 0) / allSubmissions.length
+    : 100;
   const uniqueStudents = new Set(allSubmissions.map(r => r.name)).size;
 
   return (
@@ -206,7 +215,7 @@ export default function InstructorDashboard() {
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              {released ? (
+                              {r.released ? (
                                 <div className="flex flex-col">
                                   <span className="font-bold text-slate-800 text-sm">{score} / {quizData[r.subject]?.length || 0}</span>
                                   <div className="w-24 h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden">

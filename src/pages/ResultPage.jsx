@@ -4,35 +4,43 @@ import { QuizContext } from "../context/QuizContext";
 import { ChevronLeft, ClipboardList, Calendar, AlertCircle, Folder } from "lucide-react";
 
 export default function ResultsPage() {
-  const { results, currentUser, released, calculateScore, quizData } = useContext(QuizContext);
+  const { results, currentUser, calculateScore, quizData } = useContext(QuizContext);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Pass both subjectName and subjectKey when navigating from StudentHome
   const subjectName = location.state?.subjectName;
   const subjectKey = location.state?.subjectKey;
 
-  // Grab results for this subject
-  const subjectResults = (subjectKey && results[subjectKey]) || [];
+  // --- Grab results: single subject or all subjects ---
+  const allResults = subjectKey
+    ? results[subjectKey] || []
+    : Object.keys(results).flatMap(key =>
+        results[key].map(r => ({ ...r, subjectKey: key, subjectName: key })) // attach subjectKey/Name for display
+      );
 
-  // Filter by currentUser
-  const filteredResults = subjectResults.filter(r => {
+  // --- Filter by current user ---
+  const filteredResults = allResults.filter(r => {
     const currentName = typeof currentUser === 'object' ? currentUser?.name : currentUser;
-    const resultName = r.name;
-    return resultName === currentName;
+    return r.name === currentName;
   });
 
-  const avgCheating = filteredResults.length > 0 ? filteredResults.reduce((sum, r) => sum + (r.violations / 3 * 100), 0) / filteredResults.length : 0;
+  // --- Compute stats ---
+  const avgCheating = filteredResults.length > 0
+    ? filteredResults.reduce((sum, r) => sum + (r.violations / 3 * 100), 0) / filteredResults.length
+    : 0;
   const integrityPercent = 100 - avgCheating;
 
-  const avgGrade = filteredResults.length > 0 ? filteredResults.reduce((sum, r) => {
-    const score = calculateScore(r.answers, quizData[subjectKey]);
-    return sum + score;
-  }, 0) / filteredResults.length : 0;
+  const avgGrade = filteredResults.length > 0
+    ? filteredResults.reduce((sum, r) => {
+        const key = r.subjectKey || subjectKey;
+        const score = calculateScore(key, r.answers);
+        return sum + score;
+      }, 0) / filteredResults.length
+    : 0;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <header className="h-16 bg-white border-b border-gray-200 px-8 flex items-center gap-4 sticky top-0 z-20 shadow-sm">
         <button
           onClick={() => navigate("/studenthome")}
@@ -42,7 +50,7 @@ export default function ResultsPage() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-gray-800">
-            {subjectName ? `${subjectName} History` : "My Quiz History"}
+            {subjectName ? `${subjectName} History` : "My Quiz History (All Subjects)"}
           </h1>
           <p className="text-xs text-gray-500 font-medium">
             Viewing results for {typeof currentUser === 'object' ? currentUser.name : currentUser}
@@ -50,12 +58,15 @@ export default function ResultsPage() {
         </div>
       </header>
 
+      {/* MAIN */}
       <main className="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full">
-        {/* --- SUMMARY STATS --- */}
+        {/* SUMMARY STATS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <p className="text-sm font-medium text-gray-500 mb-1">Overall Grade</p>
-            <h3 className="text-3xl font-bold text-blue-600">{released ? `${avgGrade.toFixed(0)}%` : "Pending"}</h3>
+            <h3 className="text-3xl font-bold text-blue-600">
+              {avgGrade.toFixed(0)}%
+            </h3>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -71,7 +82,7 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* --- TABLE SECTION --- */}
+        {/* TABLE */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {filteredResults.length > 0 ? (
             <div className="overflow-x-auto">
@@ -88,11 +99,15 @@ export default function ResultsPage() {
                   {filteredResults.map((result, idx) => (
                     <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                            <ClipboardList size={20} />
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                              <ClipboardList size={20} />
+                            </div>
+                            <p className="font-semibold text-gray-800">
+                              {result.subjectName || result.subjectKey} - {result.module || "Module 1"} Quiz
+                            </p>
                           </div>
-                          <p className="font-semibold text-gray-800">Module 1 Quiz</p>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
@@ -109,14 +124,11 @@ export default function ResultsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        {released ? (() => {
-                          const score = calculateScore(result.answers, quizData[subjectKey]);
-                          return (
-                            <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-md border border-green-200">
-                              Scored: {score.toFixed(0)}%
-                            </span>
-                          );
-                        })() : (
+                        {result.released ? (
+                          <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-md border border-green-200">
+                            Scored: {calculateScore(result.subjectKey, result.answers).toFixed(0)}%
+                          </span>
+                        ) : (
                           <span className="text-sm font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-md border border-orange-200">
                             Pending Review
                           </span>

@@ -105,7 +105,6 @@ export const QuizProvider = ({ children }) => {
   ) => {
     const studentName = currentUser || "Student";
 
-    // Ensure we have question data for accurate grading. If not loaded yet, fetch on demand.
     const ensureAndSave = async () => {
       let questions = quizData[subjectKey] || [];
       if (!questions.length) {
@@ -135,18 +134,19 @@ export const QuizProvider = ({ children }) => {
           violations: violationRef.current[subjectKey] || 0,
           score: computedScore,
           totalQuestions: questions.length,
+          released: false // <-- now per submission
         });
         return updated;
       });
     };
 
-    // fire and forget; navigation usually follows from caller after submitQuiz
     ensureAndSave();
 
     const quizTaken = JSON.parse(localStorage.getItem("quizTakenBySubject") || "{}");
     quizTaken[subjectKey] = true;
     localStorage.setItem("quizTakenBySubject", JSON.stringify(quizTaken));
   };
+
 
   const releaseScores = () => setReleased(true);
 
