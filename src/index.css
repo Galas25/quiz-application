@@ -1,22 +1,79 @@
 @import "tailwindcss";
 
-/* Minimal global styles (restored to pre-dark-mode appearance) */
+/* Minimal global styles */
 html, body, #root {
   height: 100%;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f8fafc;
-  color: #111827;
-  margin: 0;
-  padding: 0;
+  background-color: #111827; /* dark gray background */
+  color: #f9fafb;            /* white text */
 }
 
-/* Keep utility overrides minimal to avoid dark-mode behavior */
-.bg-white { background-color: #ffffff; }
-.text-gray-800 { color: #1f2937; }
-.border-gray-200 { border-color: #e5e7eb; }
+/* Primary blues / indigo (buttons, progress, highlights) */
+.bg-indigo-600 { background-color: #4f46e5 !important; }
+.bg-indigo-700 { background-color: #4338ca !important; }
+.bg-indigo-500 { background-color: #6366f1 !important; }
 
-/* Simple selection color */
-::selection { background: #c7d2fe; color: #0f172a; }
+.text-indigo-600 { color: #4f46e5 !important; }
+.text-indigo-500 { color: #6366f1 !important; }
+
+.hover\:bg-indigo-700:hover { background-color: #4338ca !important; }
+
+/* Gray system (cards, borders, text) */
+.bg-gray-800 { background-color: #1f2937 !important; }
+.bg-gray-700 { background-color: #374151 !important; }
+.bg-gray-900 { background-color: #111827 !important; }
+
+.text-gray-100 { color: #f9fafb !important; }
+.text-gray-200 { color: #e5e7eb !important; }
+.text-gray-300 { color: #d1d5db !important; }
+.text-gray-400 { color: #9ca3af !important; }
+
+.border-gray-700 { border-color: #374151 !important; }
+.border-gray-600 { border-color: #4b5563 !important; }
+
+/* Success (finalized, no issues) */
+.bg-green-50 { background-color: #166534 !important; } /* deep green accent */
+.text-green-400 { color: #4ade80 !important; }
+.border-green-100 { border-color: #4ade80 !important; }
+
+/* Warning (violations) */
+.bg-orange-50 { background-color: #78350f !important; } /* dark orange */
+.text-orange-600 { color: #f97316 !important; }
+.border-orange-100 { border-color: #fbbf24 !important; }
+
+/* Danger (logout, reset) */
+.text-red-400 { color: #f87171 !important; }
+.text-red-500 { color: #ef4444 !important; }
+.text-red-600 { color: #dc2626 !important; }
+
+.hover\:bg-red-50:hover { background-color: #88111b !important; }
+
+/* Inputs & focus */
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.35); /* indigo ring */
+  background-color: #1f2937;
+  color: #f9fafb;
+}
+
+/* Table hover */
+.hover\:bg-gray-700:hover {
+  background-color: #374151 !important;
+}
+
+/* Progress bar (score bar) */
+.bg-indigo-500 {
+  background-image: linear-gradient(
+    90deg,
+    #6366f1,
+    #4f46e5
+  );
+}
+
+/* Selection */
+::selection {
+  background-color: #4f46e5;
+  color: #f9fafb;
+}

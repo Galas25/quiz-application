@@ -16,9 +16,8 @@ import {
 } from "lucide-react";
 
 export default function InstructorDashboard() {
-  const { results, setResults, setCurrentUser, currentUser, quizData } = useContext(QuizContext);
+  const { results, setResults, releaseScores, released, setCurrentUser, currentUser, quizData } = useContext(QuizContext);
   const [searchTerm, setSearchTerm] = useState("");
-  const [released, setReleased] = useState(false); // button state
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -50,58 +49,48 @@ export default function InstructorDashboard() {
   };
 
   const handleReleaseScores = () => {
-    setResults(prev => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach(subKey => {
-        updated[subKey] = updated[subKey].map(r => ({ ...r, released: true }));
-      });
-      localStorage.setItem("results", JSON.stringify(updated));
-      return updated;
-    });
-    setReleased(true);
+    releaseScores();
+    localStorage.setItem("released", "true");
   };
 
-  // Flatten all results
   const allSubmissions = Object.values(results || {}).flat();
   const totalSubmissions = allSubmissions.length;
   const flaggedCount = allSubmissions.filter(r => r?.violations > 0).length;
-  const avgIntegrity = allSubmissions.length > 0
-    ? allSubmissions.reduce((sum, r) => sum + (100 - (r.violations / 3 * 100)), 0) / allSubmissions.length
-    : 100;
+  const avgIntegrity = allSubmissions.length > 0 ? allSubmissions.reduce((sum, r) => sum + (100 - (r.violations / 3 * 100)), 0) / allSubmissions.length : 100;
   const uniqueStudents = new Set(allSubmissions.map(r => r.name)).size;
 
   return (
-    <div className="flex min-h-screen bg-[#f8fafc]">
+    <div className="flex min-h-screen bg-gray-900">
       {/* SIDEBAR */}
-      <aside className="w-64 bg-white border-r border-slate-200 hidden lg:flex flex-col sticky top-0 h-screen">
-        <div className="p-8 flex items-center gap-3 text-blue-600">
+      <aside className="w-64 bg-gray-800 border-r border-gray-700 hidden lg:flex flex-col sticky top-0 h-screen">
+        <div className="p-8 flex items-center gap-3 text-indigo-400">
           <GraduationCap size={32} />
-          <h1 className="text-xl font-bold text-slate-800 tracking-tight">Faculty Portal</h1>
+          <h1 className="text-xl font-bold text-white tracking-tight">Faculty Portal</h1>
         </div>
 
         <nav className="flex-1 px-4 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold">
+          <button className="w-full flex items-center gap-3 px-4 py-3 bg-indigo-700 text-white rounded-xl text-sm font-semibold">
             <LayoutDashboard size={18} /> Overview
           </button>
           <div className="pt-4 pb-2 px-4">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Database Tools</p>
+            <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Database Tools</p>
           </div>
           <button
             onClick={clearAllData}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl text-sm font-medium transition"
+            className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-600 hover:bg-red-700 rounded-xl text-sm font-medium transition"
           >
             <XCircle size={18} /> Reset Database
           </button>
         </nav>
 
-        <div className="p-6 border-t border-slate-100">
+        <div className="p-6 border-t border-gray-700">
           <div className="mb-4 px-4">
-            <p className="text-[10px] text-slate-400 uppercase font-bold">Instructor</p>
-            <p className="text-sm font-bold text-slate-700 truncate">{currentUser || "Faculty"}</p>
+            <p className="text-[10px] text-indigo-300 uppercase font-bold">Instructor</p>
+            <p className="text-sm font-bold text-white truncate">{currentUser || "Faculty"}</p>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl text-sm font-semibold transition"
+            className="w-full flex items-center gap-3 px-4 py-3 text-indigo-300 hover:text-red-500 hover:bg-red-700 rounded-xl text-sm font-semibold transition"
           >
             <LogOut size={18} /> Sign Out
           </button>
@@ -110,13 +99,13 @@ export default function InstructorDashboard() {
 
       {/* MAIN CONTENT */}
       <main className="flex-1">
-        <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-30">
+        <header className="h-20 bg-gray-800 border-b border-gray-700 px-8 flex items-center justify-between sticky top-0 z-30">
           <div className="relative w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-300" size={18} />
             <input
               type="text"
               placeholder="Search by student name..."
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-xl text-sm text-white placeholder-indigo-300 focus:bg-gray-800 focus:ring-2 focus:ring-indigo-500 transition outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -127,8 +116,8 @@ export default function InstructorDashboard() {
             disabled={released}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition ${
               released
-                ? "bg-slate-100 text-slate-400"
-                : "bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-200"
+                ? "bg-gray-700 text-gray-400"
+                : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-500/20"
             }`}
           >
             {released ? <CheckCircle size={18} /> : <Clock size={18} />}
@@ -139,52 +128,52 @@ export default function InstructorDashboard() {
         <div className="p-8 max-w-7xl mx-auto">
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-sm">
+              <div className="w-10 h-10 bg-indigo-600 text-white rounded-lg flex items-center justify-center mb-4">
                 <Users size={20} />
               </div>
-              <h3 className="text-3xl font-bold text-slate-800">{totalSubmissions}</h3>
-              <p className="text-slate-500 text-sm font-medium">Quizzes Completed</p>
+              <h3 className="text-3xl font-bold text-white">{totalSubmissions}</h3>
+              <p className="text-indigo-300 text-sm font-medium">Quizzes Completed</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-sm">
+              <div className="w-10 h-10 bg-orange-600 text-white rounded-lg flex items-center justify-center mb-4">
                 <ShieldAlert size={20} />
               </div>
-              <h3 className="text-3xl font-bold text-slate-800">{avgIntegrity.toFixed(0)}%</h3>
-              <p className="text-slate-500 text-sm font-medium">Academic Integrity</p>
+              <h3 className="text-3xl font-bold text-white">{avgIntegrity.toFixed(0)}%</h3>
+              <p className="text-indigo-300 text-sm font-medium">Academic Integrity</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-sm">
+              <div className="w-10 h-10 bg-purple-600 text-white rounded-lg flex items-center justify-center mb-4">
                 <Users size={20} />
               </div>
-              <h3 className="text-3xl font-bold text-slate-800">{uniqueStudents}</h3>
-              <p className="text-slate-500 text-sm font-medium">Records Found</p>
+              <h3 className="text-3xl font-bold text-white">{uniqueStudents}</h3>
+              <p className="text-indigo-300 text-sm font-medium">Records Found</p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-4">
+            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-sm">
+              <div className="w-10 h-10 bg-indigo-600 text-white rounded-lg flex items-center justify-center mb-4">
                 <Filter size={20} />
               </div>
-              <h3 className={`text-3xl font-bold ${released ? 'text-green-600' : 'text-slate-800'}`}>
+              <h3 className={`text-3xl font-bold ${released ? 'text-green-400' : 'text-white'}`}>
                 {released ? "Finalized" : "Drafting"}
               </h3>
-              <p className="text-slate-500 text-sm font-medium">Grading Status</p>
+              <p className="text-indigo-300 text-sm font-medium">Grading Status</p>
             </div>
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-bold text-slate-800 text-lg">Student Submissions</h2>
-              <span className="text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded-full uppercase tracking-tighter">Live Updates</span>
+          <div className="bg-gray-800 rounded-2xl border border-gray-700 shadow-sm">
+            <div className="px-6 py-5 border-b border-gray-700 flex items-center justify-between">
+              <h2 className="font-bold text-white text-lg">Student Submissions</h2>
+              <span className="text-xs font-bold text-indigo-300 bg-gray-700 px-3 py-1 rounded-full uppercase tracking-tighter">Live Updates</span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50/50">
-                  <tr className="text-slate-400 text-[11px] font-bold uppercase tracking-widest border-b border-slate-100">
+                <thead className="bg-gray-800/50">
+                  <tr className="text-indigo-300 text-[11px] font-bold uppercase tracking-widest border-b border-gray-700">
                     <th className="px-6 py-4">Student</th>
                     <th className="px-6 py-4">Subject</th>
                     <th className="px-6 py-4">Module</th>
@@ -194,18 +183,18 @@ export default function InstructorDashboard() {
                     <th className="px-6 py-4 text-right">Timestamp</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-gray-700">
                   {allSubmissions.length > 0 ? (
                     allSubmissions
                       .filter(r => (r.name || "").toLowerCase().includes(searchTerm.toLowerCase()))
                       .map((r, i) => {
                         const score = calculateScore(r.subject, r.answers);
                         return (
-                          <tr key={i} className="hover:bg-slate-50 transition group">
-                            <td className="px-6 py-4 font-bold text-slate-700">{r.name || "Anonymous"}</td>
-                            <td className="px-6 py-4">{r.subject || "N/A"}</td>
-                            <td className="px-6 py-4">{r.module || "N/A"}</td>
-                            <td className="px-6 py-4">{r.quizName || "N/A"}</td>
+                          <tr key={i} className="hover:bg-gray-700 transition group">
+                            <td className="px-6 py-4 font-bold text-white">{r.name || "Anonymous"}</td>
+                            <td className="px-6 py-4 text-indigo-200">{r.subject || "N/A"}</td>
+                            <td className="px-6 py-4 text-indigo-200">{r.module || "N/A"}</td>
+                            <td className="px-6 py-4 text-indigo-200">{r.quizName || "N/A"}</td>
                             <td className="px-6 py-4">
                               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
                                 r.violations > 0 ? "bg-orange-50 text-orange-600 border border-orange-100" : "bg-green-50 text-green-600 border border-green-100"
@@ -215,21 +204,21 @@ export default function InstructorDashboard() {
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              {r.released ? (
+                              {released ? (
                                 <div className="flex flex-col">
-                                  <span className="font-bold text-slate-800 text-sm">{score} / {quizData[r.subject]?.length || 0}</span>
-                                  <div className="w-24 h-1.5 bg-slate-100 rounded-full mt-1 overflow-hidden">
+                                  <span className="font-bold text-white text-sm">{score} / {quizData[r.subject]?.length || 0}</span>
+                                  <div className="w-24 h-1.5 bg-indigo-700/30 rounded-full mt-1 overflow-hidden">
                                     <div
-                                      className="h-full bg-blue-500"
+                                      className="h-full bg-indigo-600"
                                       style={{ width: `${quizData[r.subject]?.length ? (score/quizData[r.subject].length)*100 : 0}%` }}
                                     />
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-[11px] font-bold text-slate-400 italic">Reviewing...</span>
+                                <span className="text-[11px] font-bold text-indigo-300 italic">Reviewing...</span>
                               )}
                             </td>
-                            <td className="px-6 py-4 text-right text-xs text-slate-400 font-medium">
+                            <td className="px-6 py-4 text-right text-xs text-indigo-300 font-medium">
                               {r.timestamp ? new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"}
                             </td>
                           </tr>
@@ -237,7 +226,7 @@ export default function InstructorDashboard() {
                       })
                   ) : (
                     <tr>
-                      <td colSpan="7" className="p-20 text-center text-slate-400">
+                      <td colSpan="7" className="p-20 text-center text-indigo-300">
                         <BookOpen size={40} className="mx-auto mb-3 opacity-20" />
                         <p className="text-sm">No submissions found.</p>
                       </td>
