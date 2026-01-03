@@ -46,7 +46,7 @@ export const QuizProvider = ({ children }) => {
     loadAll();
   }, []);
 
-  // When quiz data finishes loading, recompute stored scores for any saved results
+  // Recompute scores after quiz data loads
   useEffect(() => {
     if (loadingSubjects) return;
     setResults((prev) => {
@@ -66,6 +66,7 @@ export const QuizProvider = ({ children }) => {
     });
   }, [loadingSubjects, quizData]);
 
+  // Persist results
   useEffect(() => {
     localStorage.setItem("results", JSON.stringify(results));
   }, [results]);
@@ -88,21 +89,15 @@ export const QuizProvider = ({ children }) => {
       const userAnswer = answers[q.id];
       if (userAnswer === undefined || userAnswer === null) return score;
 
-      // support two formats: stored index (number) or stored option text (string)
-      let selectedIndex = -1;
-      if (typeof userAnswer === 'number') selectedIndex = Number(userAnswer);
-      else selectedIndex = q.options.indexOf(userAnswer);
+      let selectedIndex = typeof userAnswer === "number"
+        ? Number(userAnswer)
+        : q.options.indexOf(userAnswer);
 
       return score + (selectedIndex === Number(q.answer) ? 1 : 0);
     }, 0);
   };
 
-  const submitQuiz = (
-    subjectKey,
-    answers,
-    moduleName = "Module 1",
-    quizName = "Quiz 1"
-  ) => {
+  const submitQuiz = (subjectKey, answers, moduleName = "Module 1", quizName = "Quiz 1") => {
     const studentName = currentUser || "Student";
 
     const ensureAndSave = async () => {
@@ -134,7 +129,7 @@ export const QuizProvider = ({ children }) => {
           violations: violationRef.current[subjectKey] || 0,
           score: computedScore,
           totalQuestions: questions.length,
-          released: false // <-- now per submission
+          released: released // match global released status
         });
         return updated;
       });
@@ -147,8 +142,16 @@ export const QuizProvider = ({ children }) => {
     localStorage.setItem("quizTakenBySubject", JSON.stringify(quizTaken));
   };
 
-
-  const releaseScores = () => setReleased(true);
+  const releaseScores = () => {
+    setResults((prev) => {
+      const updated = {};
+      Object.keys(prev).forEach((subKey) => {
+        updated[subKey] = prev[subKey].map((r) => ({ ...r, released: true }));
+      });
+      return updated;
+    });
+    setReleased(true);
+  };
 
   return (
     <QuizContext.Provider

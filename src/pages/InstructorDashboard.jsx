@@ -41,9 +41,7 @@ export default function InstructorDashboard() {
     return Object.entries(answers).reduce((acc, [id, ans]) => {
       const q = subjectQuestions.find(q => String(q.id) === String(id));
       if (!q) return acc;
-      let selectedIndex = -1;
-      if (typeof ans === 'number') selectedIndex = Number(ans);
-      else selectedIndex = q.options.indexOf(ans);
+      let selectedIndex = typeof ans === 'number' ? Number(ans) : q.options.indexOf(ans);
       return acc + (selectedIndex === Number(q.answer) ? 1 : 0);
     }, 0);
   };
@@ -56,11 +54,13 @@ export default function InstructorDashboard() {
   const allSubmissions = Object.values(results || {}).flat();
   const totalSubmissions = allSubmissions.length;
   const flaggedCount = allSubmissions.filter(r => r?.violations > 0).length;
-  const avgIntegrity = allSubmissions.length > 0 ? allSubmissions.reduce((sum, r) => sum + (100 - (r.violations / 3 * 100)), 0) / allSubmissions.length : 100;
+  const avgIntegrity = allSubmissions.length > 0
+    ? allSubmissions.reduce((sum, r) => sum + (100 - (r.violations / 3 * 100)), 0) / allSubmissions.length
+    : 100;
   const uniqueStudents = new Set(allSubmissions.map(r => r.name)).size;
 
   return (
-    <div className="flex min-h-screen bg-gray-900">
+    <div className="instructor-dashboard flex min-h-screen">
       {/* SIDEBAR */}
       <aside className="w-64 bg-gray-800 border-r border-gray-700 hidden lg:flex flex-col sticky top-0 h-screen">
         <div className="p-8 flex items-center gap-3 text-indigo-400">
@@ -98,7 +98,7 @@ export default function InstructorDashboard() {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1">
+      <main className="flex-1 bg-gray-900">
         <header className="h-20 bg-gray-800 border-b border-gray-700 px-8 flex items-center justify-between sticky top-0 z-30">
           <div className="relative w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-300" size={18} />

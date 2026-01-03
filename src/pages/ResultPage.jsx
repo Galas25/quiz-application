@@ -4,48 +4,39 @@ import { QuizContext } from "../context/QuizContext";
 import { ChevronLeft, ClipboardList, Calendar, AlertCircle, Folder } from "lucide-react";
 
 export default function ResultsPage() {
-  const { results, currentUser, calculateScore, quizData } = useContext(QuizContext);
+  const { results, currentUser, calculateScore, quizData, released } = useContext(QuizContext);
   const location = useLocation();
   const navigate = useNavigate();
 
   const subjectName = location.state?.subjectName;
   const subjectKey = location.state?.subjectKey;
 
-  // --- Grab results: single subject or all subjects ---
-  const allResults = subjectKey
-    ? results[subjectKey] || []
-    : Object.keys(results).flatMap(key =>
-        results[key].map(r => ({ ...r, subjectKey: key, subjectName: key })) // attach subjectKey/Name for display
-      );
+  const allResults = Object.keys(results).flatMap((key) =>
+    results[key].map((r) => ({ ...r, subjectKey: key, subjectName: key }))
+  );
 
-  // --- Filter by current user ---
-  const filteredResults = allResults.filter(r => {
-    const currentName = typeof currentUser === 'object' ? currentUser?.name : currentUser;
-    return r.name === currentName;
-  });
+  const currentName = typeof currentUser === 'object' ? currentUser?.name : currentUser;
+  const filteredResults = allResults.filter(r => r.name === currentName);
 
-  // --- Compute stats ---
   const avgCheating = filteredResults.length > 0
     ? filteredResults.reduce((sum, r) => sum + (r.violations / 3 * 100), 0) / filteredResults.length
     : 0;
   const integrityPercent = 100 - avgCheating;
 
-  const avgGrade = filteredResults.length > 0
+  // --- Correct overall grade: compute percentage per quiz ---
+  const avgGrade = released && filteredResults.length > 0
     ? filteredResults.reduce((sum, r) => {
-        const key = r.subjectKey || subjectKey;
-        const score = calculateScore(key, r.answers);
-        return sum + score;
+        const totalQ = quizData[r.subjectKey]?.length || r.totalQuestions || 0;
+        if (totalQ === 0) return sum;
+        const score = calculateScore(r.subjectKey, r.answers);
+        return sum + (score / totalQ) * 100; // percentage
       }, 0) / filteredResults.length
-    : 0;
+    : null;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-      {/* HEADER */}
       <header className="h-16 bg-white border-b border-gray-200 px-8 flex items-center gap-4 sticky top-0 z-20 shadow-sm">
-        <button
-          onClick={() => navigate("/studenthome")}
-          className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition"
-        >
+        <button onClick={() => navigate("/studenthome")} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition">
           <ChevronLeft size={24} />
         </button>
         <div>
@@ -53,19 +44,17 @@ export default function ResultsPage() {
             {subjectName ? `${subjectName} History` : "My Quiz History (All Subjects)"}
           </h1>
           <p className="text-xs text-gray-500 font-medium">
-            Viewing results for {typeof currentUser === 'object' ? currentUser.name : currentUser}
+            Viewing results for {currentName}
           </p>
         </div>
       </header>
 
-      {/* MAIN */}
       <main className="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full">
-        {/* SUMMARY STATS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <p className="text-sm font-medium text-gray-500 mb-1">Overall Grade</p>
             <h3 className="text-3xl font-bold text-blue-600">
-              {avgGrade.toFixed(0)}%
+              {avgGrade !== null ? `${avgGrade.toFixed(0)}%` : "Pending"}
             </h3>
           </div>
 
@@ -82,7 +71,6 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* TABLE */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {filteredResults.length > 0 ? (
             <div className="overflow-x-auto">
@@ -96,46 +84,51 @@ export default function ResultsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredResults.map((result, idx) => (
-                    <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                              <ClipboardList size={20} />
+                  {filteredResults.map((result, idx) => {
+                    const totalQ = quizData[result.subjectKey]?.length || result.totalQuestions || 0;
+                    const scorePercent = totalQ > 0 ? (calculateScore(result.subjectKey, result.answers) / totalQ) * 100 : 0;
+
+                    return (
+                      <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                <ClipboardList size={20} />
+                              </div>
+                              <p className="font-semibold text-gray-800">
+                                {result.subjectName || result.subjectKey} - {result.module || "Module 1"} Quiz
+                              </p>
                             </div>
-                            <p className="font-semibold text-gray-800">
-                              {result.subjectName || result.subjectKey} - {result.module || "Module 1"} Quiz
-                            </p>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Calendar size={14} />
-                          {new Date(result.timestamp).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                          result.violations > 0 ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
-                        }`}>
-                          <AlertCircle size={12} /> {Math.round((result.violations / 3) * 100)}%
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        {result.released ? (
-                          <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-md border border-green-200">
-                            Scored: {calculateScore(result.subjectKey, result.answers).toFixed(0)}%
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <Calendar size={14} />
+                            {new Date(result.timestamp).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                            result.violations > 0 ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
+                          }`}>
+                            <AlertCircle size={12} /> {Math.round((result.violations / 3) * 100)}%
                           </span>
-                        ) : (
-                          <span className="text-sm font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-md border border-orange-200">
-                            Pending Review
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {released ? (
+                            <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-md border border-green-200">
+                              Scored: {scorePercent.toFixed(0)}%
+                            </span>
+                          ) : (
+                            <span className="text-sm font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-md border border-orange-200">
+                              Pending Review
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
