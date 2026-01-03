@@ -11,9 +11,12 @@ export default function ResultsPage() {
   const subjectName = location.state?.subjectName;
   const subjectKey = location.state?.subjectKey;
 
-  const allResults = Object.keys(results).flatMap((key) =>
-    results[key].map((r) => ({ ...r, subjectKey: key, subjectName: key }))
-  );
+  // --- Filter results: only selected subject if subjectKey exists ---
+  const allResults = subjectKey
+    ? (results[subjectKey] || []).map(r => ({ ...r, subjectKey, subjectName }))
+    : Object.keys(results).flatMap(key =>
+        results[key].map(r => ({ ...r, subjectKey: key, subjectName: key }))
+      );
 
   const currentName = typeof currentUser === 'object' ? currentUser?.name : currentUser;
   const filteredResults = allResults.filter(r => r.name === currentName);
@@ -23,13 +26,13 @@ export default function ResultsPage() {
     : 0;
   const integrityPercent = 100 - avgCheating;
 
-  // --- Correct overall grade: compute percentage per quiz ---
+  // --- Compute overall grade as percentage ---
   const avgGrade = released && filteredResults.length > 0
     ? filteredResults.reduce((sum, r) => {
         const totalQ = quizData[r.subjectKey]?.length || r.totalQuestions || 0;
         if (totalQ === 0) return sum;
         const score = calculateScore(r.subjectKey, r.answers);
-        return sum + (score / totalQ) * 100; // percentage
+        return sum + (score / totalQ) * 100;
       }, 0) / filteredResults.length
     : null;
 
@@ -50,6 +53,7 @@ export default function ResultsPage() {
       </header>
 
       <main className="flex-1 p-6 md:p-10 max-w-5xl mx-auto w-full">
+        {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <p className="text-sm font-medium text-gray-500 mb-1">Overall Grade</p>
@@ -71,6 +75,7 @@ export default function ResultsPage() {
           </div>
         </div>
 
+        {/* Results Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {filteredResults.length > 0 ? (
             <div className="overflow-x-auto">
