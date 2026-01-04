@@ -44,55 +44,63 @@ export default function StudentHome() {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative">
       {subjects.map((subject) => {
         const hasQuiz = quizData[subject.key]?.length > 0;
 
         return (
           <div
             key={subject.id}
-            className="bg-white rounded-lg border shadow-sm flex flex-col"
+            className="relative bg-white rounded-lg border shadow-sm flex flex-col overflow-visible"
           >
             <div
-              className={`${subject.color} p-4 text-white h-24 rounded-t-lg`}
+              className={`${subject.color} p-4 text-white h-24 rounded-t-lg relative`}
             >
-              <div className="flex justify-between">
+              <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-xl font-semibold">{subject.title}</h2>
                   <p className="text-sm">{subject.section}</p>
                 </div>
-                <button
-                  onClick={() =>
-                    setOpenMenuId(openMenuId === subject.id ? null : subject.id)
-                  }
-                >
-                  <MoreVertical />
-                </button>
-              </div>
 
-              {openMenuId === subject.id && (
-                <div className="absolute bg-white shadow rounded mt-2 right-4 z-10">
+                {/* Dropdown button */}
+                <div className="relative">
                   <button
                     onClick={() =>
-                      navigate("/result", {
-                        state: {
-                          subjectKey: subject.key,
-                          subjectName: subject.title,
-                        },
-                      })
+                      setOpenMenuId(
+                        openMenuId === subject.id ? null : subject.id
+                      )
                     }
-                    className="px-4 py-2 w-full flex gap-2 hover:bg-gray-100"
+                    className="p-1 hover:bg-white/20 rounded-full"
                   >
-                    <BarChart2 size={16} /> View Grades
+                    <MoreVertical size={20} />
                   </button>
-                  <button
-                    onClick={() => handleUnenroll(subject.id)}
-                    className="px-4 py-2 w-full flex gap-2 text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut size={16} /> Unenroll
-                  </button>
+
+                  {openMenuId === subject.id && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl border border-gray-100 z-30 py-1">
+                      <button
+                        onClick={() => {
+                          navigate("/result", {
+                            state: {
+                              subjectKey: subject.key,
+                              subjectName: subject.title,
+                            },
+                          });
+                          setOpenMenuId(null);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <BarChart2 size={16} /> View Grades
+                      </button>
+                      <button
+                        onClick={() => handleUnenroll(subject.id)}
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <LogOut size={16} /> Unenroll
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="p-4 flex-1">
@@ -134,6 +142,14 @@ export default function StudentHome() {
           </div>
         );
       })}
+
+      {/* Click outside dropdown to close */}
+      {openMenuId && (
+        <div
+          className="fixed inset-0 z-20"
+          onClick={() => setOpenMenuId(null)}
+        />
+      )}
     </div>
   );
 }
