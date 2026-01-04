@@ -29,17 +29,18 @@ export default function Timer({ duration, onExpire }) {
   const progress = (time / duration) * 100;
 
   return (
-    <div className="w-full mb-6">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-gray-100">Time Remaining</span>
-        <span className="text-sm font-bold text-gray-100">{formatTime(time)}</span>
-      </div>
-      <div className="w-full h-6 bg-gray-800 rounded-full overflow-hidden shadow-inner">
-        <div
-          className="h-full bg-red-500 transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        ></div>
-      </div>
-    </div>
+   <div className="w-full mb-2">
+     <div className="flex justify-between items-center mb-1">
+       <span className="text-sm font-medium text-gray-800">Time Remaining</span>
+       <span className="text-sm font-bold text-gray-800">{formatTime(time)}</span>
+     </div>
+     <div className="w-full h-4 bg-gray-800 rounded-full overflow-hidden shadow-inner">
+       <div
+         className="h-full bg-red-500 transition-all duration-500"
+         style={{ width: `${progress}%` }}
+       ></div>
+     </div>
+   </div>
+
   );
 }

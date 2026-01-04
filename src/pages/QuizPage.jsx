@@ -135,13 +135,14 @@ export default function QuizPage() {
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 bg-orange-50 text-orange-700 px-4 py-1.5 rounded-full border border-orange-200 font-bold">
-            <Clock size={18} />
-            <Timer duration={30} onExpire={() => handleSubmit(true)} />
+          <div className="flex items-center gap-2">
+            <Clock size={18} className="text-orange-600" />
+            <Timer duration={300} onExpire={() => handleSubmit(true)} />
           </div>
+
           <div className="flex flex-col items-end">
             <span className="text-xs font-bold text-gray-700">{currentUser}</span>
-            <span className="text-[10px] text-red-500 font-black">
+            <span className="text-[12px] text-red-500 font-black">
               VIOLATIONS: {violationCount}/3
             </span>
           </div>
