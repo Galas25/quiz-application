@@ -32,7 +32,6 @@ export default function StudentHome() {
   }, [currentUser, navigate, setCurrentUser]);
 
   const handleLogout = () => {
-    // clear persisted user and update context
     localStorage.removeItem("currentUser");
     setCurrentUser(null);
     navigate("/login");
@@ -53,32 +52,32 @@ export default function StudentHome() {
     <div className="flex flex-col min-h-screen bg-gray-100">
 
       {/* SIDEBAR */}
-      <div className={`fixed inset-y-0 left-0 w-64 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-blue-600 italic">Quiz Portal</h2>
-          <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-gray-100 rounded-full">
-            <X size={20} className="text-gray-500" />
+      <div className={`fixed inset-y-0 left-0 w-64 bg-gray-900 text-gray-200 shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-indigo-400 italic">Quiz Portal</h2>
+          <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:bg-gray-800 rounded-full">
+            <X size={20} className="text-gray-300" />
           </button>
         </div>
         <nav className="p-4 space-y-2">
-          <button onClick={() => {navigate("/studenthome"); setIsSidebarOpen(false)}} className="w-full flex items-center gap-4 px-4 py-3 text-blue-600 bg-blue-50 rounded-lg font-medium">
+          <button onClick={() => {navigate("/studenthome"); setIsSidebarOpen(false)}} className="w-full flex items-center gap-4 px-4 py-3 bg-gray-800 text-indigo-400 rounded-lg font-medium">
             <Home size={20} /> Home
           </button>
-          <button onClick={() => {navigate("/result"); setIsSidebarOpen(false)}} className="w-full flex items-center gap-4 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">
+          <button onClick={() => {navigate("/result"); setIsSidebarOpen(false)}} className="w-full flex items-center gap-4 px-4 py-3 text-gray-200 hover:bg-gray-800 rounded-lg font-medium">
             <BarChart2 size={20} /> My Grades
           </button>
-          <button className="w-full flex items-center gap-4 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg font-medium">
+          <button className="w-full flex items-center gap-4 px-4 py-3 text-gray-200 hover:bg-gray-800 rounded-lg font-medium">
             <Settings size={20} /> Settings
           </button>
-          <div className="border-t border-gray-100 my-4 pt-4">
-            <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg font-medium">
+          <div className="border-t border-gray-800 my-4 pt-4">
+            <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-red-500 hover:bg-red-700 rounded-lg font-medium">
               <LogOut size={20} /> Logout
             </button>
           </div>
         </nav>
       </div>
 
-      {isSidebarOpen && <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setIsSidebarOpen(false)}></div>}
+      {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsSidebarOpen(false)}></div>}
 
       {/* HEADER */}
       <header className="h-16 bg-white border-b border-gray-200 px-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
@@ -88,10 +87,14 @@ export default function StudentHome() {
           </button>
           <h1 className="text-xl font-normal text-gray-700">Quiz Portal</h1>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden md:block text-sm text-gray-600">Hi, {currentUser}</span>
-          <UserCircle size={36} className="text-gray-400 border rounded-full" />
+        <div className="flex items-center gap-3 bg-blue-100 border border-blue-300 px-3 py-1">
+          <div className="flex flex-col leading-tight">
+            <span className="text-sm font-semibold text-blue-800">{currentUser}</span>
+            <span className="text-xs text-blue-600">Student</span>
+          </div>
+          <UserCircle size={36} className="text-blue-700 border border-none p-[2px]" />
         </div>
+
       </header>
 
       {/* MAIN GRID */}
@@ -153,7 +156,7 @@ export default function StudentHome() {
       </main>
 
       <footer className="bg-white border-t border-gray-200 p-4 text-center text-sm text-gray-500">
-        <p>&copy; 2024 QuizPortal. All rights reserved.</p>
+        <p>&copy; 2025 Quiz Application. All rights reserved.</p>
       </footer>
 
       {openMenuId && <div className="fixed inset-0 z-20" onClick={() => setOpenMenuId(null)}></div>}

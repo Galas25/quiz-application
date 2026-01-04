@@ -8,7 +8,6 @@ export default function Timer({ duration, onExpire }) {
     const timer = setInterval(() => {
       setTime(prev => prev - 1);
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -20,16 +19,27 @@ export default function Timer({ duration, onExpire }) {
     }
   }, [time, onExpire]);
 
-
   const formatTime = sec => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return `${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
   };
 
+  // Compute progress bar width
+  const progress = (time / duration) * 100;
+
   return (
-    <div className="inline-block bg-white px-4 py-2 rounded-lg shadow text-gray-700 font-semibold mb-4">
-      Time Left: {formatTime(time)}
+    <div className="w-full mb-6">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-sm font-medium text-gray-100">Time Remaining</span>
+        <span className="text-sm font-bold text-gray-100">{formatTime(time)}</span>
+      </div>
+      <div className="w-full h-6 bg-gray-800 rounded-full overflow-hidden shadow-inner">
+        <div
+          className="h-full bg-red-500 transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
     </div>
   );
 }
