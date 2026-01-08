@@ -1,8 +1,32 @@
 [
   {
     "id": "q1",
-    "question": "What are you",
-    "options": ["A person", "A yuri", "A number", "correct answer"],
-    "answer": 3
-  }]
-
+    "question": "What layer of the Earth is made of solid rock and includes the crust and upper mantle?",
+    "options": ["Asthenosphere", "Lithosphere", "Core", "Mesosphere"],
+    "answer": 1
+  },
+  {
+    "id": "q2",
+    "question": "What process causes tectonic plates to move?",
+    "options": ["Solar radiation", "Ocean tides", "Mantle convection", "Earth's rotation"],
+    "answer": 2
+  },
+  {
+    "id": "q3",
+    "question": "Which gas is most responsible for the greenhouse effect on Earth?",
+    "options": ["Oxygen", "Nitrogen", "Carbon dioxide", "Argon"],
+    "answer": 2
+  },
+  {
+    "id": "q4",
+    "question": "What type of rock forms from cooled magma or lava?",
+    "options": ["Sedimentary", "Metamorphic", "Igneous", "Fossilized"],
+    "answer": 2
+  },
+  {
+    "id": "q5",
+    "question": "What instrument is used to measure earthquakes?",
+    "options": ["Barometer", "Thermometer", "Seismograph", "Anemometer"],
+    "answer": 2
+  }
+]

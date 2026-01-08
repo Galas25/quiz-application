@@ -1,8 +1,32 @@
 [
   {
     "id": "q1",
-    "question": "numbers",
-    "options": ["6", "7", "6.7", "67 correct answer"],
-    "answer": 3
-  }]
-
+    "question": "What is the approximate age of the Earth in billions of years?",
+    "options": ["3.5", "4.0", "4.6", "6.7"],
+    "answer": 2
+  },
+  {
+    "id": "q2",
+    "question": "Which isotope pair is commonly used in radiometric dating of ancient rocks?",
+    "options": ["Carbon-14 to Nitrogen-14", "Uranium-238 to Lead-206", "Oxygen-18 to Oxygen-16", "Potassium-39 to Argon-39"],
+    "answer": 1
+  },
+  {
+    "id": "q3",
+    "question": "At which boundary do S-waves disappear, indicating a liquid layer?",
+    "options": ["Crust–mantle boundary", "Upper–lower mantle boundary", "Mantle–outer core boundary", "Outer–inner core boundary"],
+    "answer": 2
+  },
+  {
+    "id": "q4",
+    "question": "Which process directly drives seafloor spreading at mid-ocean ridges?",
+    "options": ["Slab pull", "Ridge push", "Mantle upwelling and decompression melting", "Transform fault motion"],
+    "answer": 2
+  },
+  {
+    "id": "q5",
+    "question": "What causes Earth's seasons?",
+    "options": ["Distance from the Sun", "Changes in solar output", "Tilt of Earth's axis", "Earth's rotation speed"],
+    "answer": 2
+  }
+]
